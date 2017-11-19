@@ -1,0 +1,11 @@
+---
+- hosts: webserver
+  become: yes
+  gather_facts: False
+  pre_tasks:
+    - name: install python
+      raw: rm /var/lib/dpkg/lock && apt-get -y install python2.7 python-minimal 
+    - setup: # aka gather_facts  
+  vars:
+  roles:
+    - nginx

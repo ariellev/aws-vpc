@@ -1,0 +1,44 @@
+--- 
+- name: remove old docker versions
+  apt: name={{item}} state=absent
+  with_items:
+    - "docker"
+    - "docker-engine"
+    - "docker.io"
+
+- name: apt update
+  apt: update_cache=yes
+    
+- name: install apt dep
+  apt: name={{item}} state=present
+  with_items:
+    - "linux-image-extra-virtual"
+    - "apt-transport-https"
+    - "ca-certificates"
+    - "curl"
+    - "software-properties-common"
+    - "python-pip"
+
+- name: download apt-key with curl
+  raw: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    
+- name: verify apt-key
+  apt_key: keyserver=http://download.docker.com/linux/ubuntu/gpg id=9DC858229FC7DD38854AE2D88D81803C0EBFCD88 state=present
+  
+- name: add apt-repo
+  command: add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable"
+  
+- name: apt update
+  command: apt-get update
+
+- name: install docker
+  apt: name=docker-ce state=present
+  
+- name: add ubuntu to docker group
+  user: name=ubuntu groups=docker state=present
+  
+- name: pip install dependencies
+  pip: name=docker-py
+    
+- name: start nginx
+  docker_container: name=nginx-server image=nginx state=started restart=yes ports=80:80 recreate=yes
